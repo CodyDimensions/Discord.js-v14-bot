@@ -1,4 +1,4 @@
-const { Client, GatewayIntentBits, Partials, ActivityType } = require('discord.js');
+const { Client, GatewayIntentBits, Partials, ActivityType, Collection } = require('discord.js');
 const client = new Client({
     intents: [ /* https://discord-api-types.dev/api/discord-api-types-v10/enum/GatewayIntentBits */
         GatewayIntentBits.Guilds,
@@ -14,18 +14,21 @@ const client = new Client({
     ]
 });
 
+const fs = require('fs');
+var colors = require('colors');
 require('dotenv').config(); // You need to reference dotenv in order to use .env
 
-// now we gonna check if the bot is online by using the ready event listener
-client.on('ready', () => {
-    console.log(`Logged in as ${client.user.tag}`)
+module.exports = client;
 
-    // set activity status
-    client.user.setActivity('Dimensions', {
-        type: ActivityType.Listening
-    });
+client.commands = new Collection();
+client.aliases = new Collection();
+client.slashCommands = new Collection();
+client.prefix = process.env.PREFIX;
 
-    client.user.setStatus('dnd');
-});
+// load the handlers
+fs.readdirSync('./handlers').forEach((handler) => {
+    require(`./handlers/${handler}`)(client)
+})
+
 
 client.login(process.env.TOKEN); // login the discord bot
